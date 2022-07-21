@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "get_args",
+	"modes_and_median",
+]
