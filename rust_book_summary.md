@@ -394,7 +394,7 @@ let s = data.to_string();
 and   
 `let s = "initial contents".to_string();` both create a String from a string literal.  `.to_string` is available on anything that implements the `Display` trait.  
 `+` concatenates strings.  It calls the add method, which takes ownership of the LHS, first argument, self.    
-`.add` only adds an `&str` to a `String`, but the compiler can coerce an `%String` arg into an `&str` (deref coercion).  
+`.add` only adds an `&str` to a `String`, but the compiler can coerce an `&String` arg into an `&str` (deref coercion).  
   
 #### The format! macro  
 ```  
@@ -424,7 +424,7 @@ for b in "नमस्ते".bytes() {
     println!("{}", b);  
 }  
 ```  
-Crates are available on crates.io for grapheme clusters (letters).  
+Crates are available on crates.io for grapheme clusters (letters), e.g. [https://crates.io/crates/unicode-segmentation].  
   
 ### Hash Maps  
 `HashMap<K, V>` stores a mapping of keys of type `K` to values of type `V` using a _hashing function_.  The key can be of any type.  They are growable.   

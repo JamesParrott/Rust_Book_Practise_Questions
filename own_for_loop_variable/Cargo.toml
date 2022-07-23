@@ -1,10 +1,8 @@
 [package]
-name = "pig_latin"
+name = "own_for_loop_variable"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-unicode-segmentation = "1.9.0"
-get_args = { path = "../get_args" }

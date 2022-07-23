@@ -3,4 +3,6 @@
 members = [
     "get_args",
 	"modes_and_median",
+	"pig_latin",
+	"own_for_loop_variable",
 ]
