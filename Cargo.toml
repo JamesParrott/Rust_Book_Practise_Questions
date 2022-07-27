@@ -5,4 +5,6 @@ members = [
 	"modes_and_median",
 	"pig_latin",
 	"own_for_loop_variable",
+	"employee_names_db",
+	"life_times",
 ]

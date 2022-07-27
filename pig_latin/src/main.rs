@@ -30,7 +30,7 @@ fn translate_text(text : &String) -> String {  // String.replace_range is used
 }
 
 fn translate_word(word : &str) -> String{
-    let mut graphemes: Vec<&str> = word.graphemes(true).collect();
+    let graphemes: Vec<&str> = word.graphemes(true).collect();
     let len = graphemes.len();
     let mut translated = String::from(word.clone());
     let first_grapheme = graphemes[0];
