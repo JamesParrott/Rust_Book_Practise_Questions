@@ -484,3 +484,103 @@ HashMaps have a special API, `entry`, for checking if a key is in a HashMap (has
 ```   
 prints: `{"world": 2, "hello": 1, "wonderful": 1}`  
 The default hashing function _SipHash_ of a HashMap is resistant to DDOS attacks but is a little slower.  It can be swapped to a different _hasher_, e.g. from crates.io.
+
+## Chapter 9 Error handling
+
+panic!(exit_message) prints exit_message, unwinds, cleans up the stack, and quits.  
+
+You can make smaller binaries by adding:  
+```
+[profile.release]
+panic = 'abort'
+```
+to Cargo.toml.
+
+Backtraces can be printed on panic by running with `RUST_BACKTRACE=1 cargo run`, to set the env variable.
+
+Result and Option enums are brought into scope by the Prelude.  
+
+`use std::io::ErrorKind;` can bring in lots of useful error types for sub matching, e.g.:  
+```    
+let f = match f {
+    Ok(file) => file,
+    Err(error) => match error.kind() {
+        ErrorKind::NotFound => match File::create("hello.txt") {
+```  
+etc. 
+
+`.unwrap()` is a shortcut method that `unwrap`s the value inside and `OK`, else panics on an `Err`.  Unlike `.expect` its error message cannot be customised.   It's understood that a call to `unwrap` or `expect` is meant as a placeholder for the way you'd want your application to handle errors.  However, `panic!` is how a test is marked as a failure; calling `unwrap` or `expect` is exactly what should happen.  It is also appropriate to call `unwrap` when you have some other logic that ensures the `Result` will have an `Ok` value, but the logic isn't something the compiler understands. 
+
+### The ? Operator 
+`?` is a shortcut for propagating errors, e.g.: 
+```
+fn read_username_from_file() -> Result<String, io::Error> {
+    let mut f = File::open("hello.txt")?;
+    let mut s = String::new();
+    f.read_to_string(&mut s)?;
+    Ok(s)
+}
+```
+If the value of the `Result` in a `Result?` is an `Ok`, the value inside the `Ok` will get returned from this expression.  If the value is an `Err`, the `Err` will immediately be `return`ed from the whole function.
+Error values that have the `?` operator called on them go through the `from` function, to coerce them into the return type of the parent function.  
+`?` can be chained on to multiple method calls.
+`?` can only be used on expressions whose values are compatible with the parent function's return type.  
+You can use `?` on a `Result` in a function that returns `Result`, and you can use the `?` operator on an `Option` in a function that returns `Option`, but you can’t mix and match.  
+
+There are restrictions on what `main`'s return type can be other than `()`, but it can return a Result<(), E>, e.g.:
+
+```
+fn main() -> Result<(), Box<dyn Error>> {
+    let f = File::open("hello.txt")?;
+
+    Ok(())
+}
+```
+As in C, the executable will exit with a value of 0 if `main` returns `Ok(())` and will exit with a non-zero value if main returns an `Err` value.  
+`main` can return any types that implement the std::process::Termination trait.
+
+## Chapter 11 Generic Types, Traits, and Lifetimes. 
+
+### Generic types.  
+Declaration of a function using generic type T: `fn largest<T: PartialOrd + Copy>(list: &[T]) -> T { ...`.  
+And of a struct: `struct Point<T> {` and an `enum Option<T> {`.
+They can be used in method definitions: 
+```
+impl<T> Point<T> {
+    fn x(&self) -> &T {
+        
+```
+If the `<T>` after `impl` is omitted and a concrete type given, the same form can be used to only implement methods on structs for specific types.  
+
+Monomorphization of code using generics at compile time means performance is not affected (post-compile multiple dispatch?).
+
+### Traits.
+Traits are like interfaces with some differences.  
+ 
+Trait definitions are a way to group method signatures together to define a set of behaviours.  
+Example trait definition:
+```
+pub trait Summary {
+    fn summarize(&self) -> String;
+}
+```
+Each type implementing `Summary` must implement `summarize`, e.g.:
+```
+impl Summary for NewsArticle {
+    fn summarize(&self) -> String {
+        ...
+    }
+}
+```
+Users must bring a Trait into scope as well as its implementation: `use aggregator::{Summary, NewsArticle};`.   
+
+Traits can be implemented on a type only if the trait or the type is local to our crate.  External traits can't be implemented on external types - _Coherence_ / the "_orphan rule_".  This ensures other people's code can't break your code and vice versa (by avoiding ambiguity from conflicting Trait implementations).  
+
+
+
+
+
+
+
+
+

@@ -1,3 +1,5 @@
+//  cargo run "new IT" "new HR" "add Andy to HR" "add Tom to IT" "show all"
+
 use std::io;
 use get_args::get_args;
 use std::collections::HashMap;
