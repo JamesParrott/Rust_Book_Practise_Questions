@@ -1,5 +1,5 @@
 #[derive(Debug)]
-struct Rectangle {
+pub struct Rectangle {
     width : usize,
     height : usize,
 }
@@ -8,7 +8,7 @@ impl Rectangle{
     fn can_hold(&self, rect : &Rectangle) -> bool {
         let fits_parallel: bool = self.width >= rect.width && self.height >= rect.height;
         let fits_perpendicular: bool = self.width >= rect.height && self.height >= rect.width;
-        fits_parallel || fits_perpendicular
+        fits_parallel || fits_perpendicular // ignore diagonal
     }
 }
 
