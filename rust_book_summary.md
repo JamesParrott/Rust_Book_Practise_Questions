@@ -1176,6 +1176,103 @@ The at operator (@) lets us create a variable that holds a value at the same tim
 
 ## Chapter 19, Advanced Features. 
 
+### Unsafe Rust.
+For when static analysis is too conservative. 
+
+To switch to unsafe Rust, use the `unsafe` keyword and then start a new block that holds the unsafe code. 
+
+The five unsafe superpowers:
+ 1) Dereference a raw pointer
+ 2) Call an unsafe function or method
+ 3) Access or modify a mutable static variable
+ 4) Implement an unsafe trait
+ 5) Access fields of unions
+
+`unsafe` doesn't turn off the borrow checker or disable any other of Rust's safety checks. 
+references in unsafe code will still be checked. 
+
+`unsafe` does not mean the code inside the block is necessarily dangerous or that it will definitely have memory safety problems: the intent is that as the programmer, you'll ensure the code inside an `unsafe` block will access memory in a valid way.
+
+To isolate unsafe code as much as possible, it's best to enclose unsafe code within a safe abstraction and provide a safe API. 
+
+#### Raw Pointers.
+
+Creating an immutable and a mutable raw pointer from references:
+```
+    let mut num = 5;
+
+    let r1 = &num as *const i32;
+    let r2 = &mut num as *mut i32;
+```
+`as` was used to cast an immutable and a mutable reference into their corresponding raw pointer types. 
+Raw pointers can be created in safe code; they just can't be dereferenced outside an unsafe block. 
+Use the above by:
+```
+    unsafe {
+        println!("r1 is: {}", *r1);
+        println!("r2 is: {}", *r2);
+    }
+```
+Having a mutable pointer and an immutable pointer to the same location could create a data race. 
+#### Calling an Unsafe Function or Method. 
+```
+    unsafe fn dangerous() {}
+
+    unsafe {
+        dangerous();
+    }
+```
+#### Foreign Function Interfaces. 
+`extern` facilitates FFIs. 
+```
+extern "C" {
+    fn abs(input: i32) -> i32;
+}
+fn main() {
+    unsafe {
+        println!("Absolute value of -3 according to C: {}", abs(-3));
+    }
+}
+```
+The "C" part defines which application binary interface (ABI) the external function uses. 
+We can also use `extern` to create an interface that allows other languages to call Rust functions. We also need to add a `#[no_mangle]` annotation. `unsafe` is not required.
+```
+#[no_mangle]
+pub extern "C" fn call_from_c() {
+    println!("Just called a Rust function from C!");
+}
+```
+#### Accessing or Modifying Mutable Static Variables.
+In Rust, global variables are called static variables. 
+The names of static variables are in SCREAMING_SNAKE_CASE by convention. 
+
+Constants and immutable static variables might seem similar, but a subtle difference is that values in a static variable have a fixed address in memory. Using the value will always access the same data. Constants, on the other hand, are allowed to duplicate their data whenever they're used.
+
+Another difference between constants and static variables is that static variables can be mutable. Accessing and modifying mutable static variables is unsafe:
+```
+static mut COUNTER: u32 = 0;
+
+fn add_to_count(inc: u32) {
+    unsafe {
+        COUNTER += inc;
+    }
+}
+
+fn main() {
+    add_to_count(3);
+
+    unsafe {
+        println!("COUNTER: {}", COUNTER);
+    }
+}
+```
+#### Unsafe Traits. 
+If we implement a type that contains a type that is not `Send` or `Sync`, such as raw pointers, and we want to mark that type as `Send` or `Sync`, we must use `unsafe`. Rust can't verify that our type upholds the normal guarantees; we need to do those checks manually and indicate as such with `unsafe`.
+
+#### Fields of a Union.
+Unions are primarily used to interface with unions in C code. 
+
+
 ### Macros. 
 Macros are expanded before the compiler interprets the meaning of the code, so a macro can, for example, implement a trait on a given type. A function can't, because it gets called at runtime and a trait needs to be implemented at compile time.
 
